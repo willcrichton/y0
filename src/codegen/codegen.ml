@@ -5,8 +5,6 @@ module M = Ollvm.Ez.Module
 module T = Ollvm.Ez.Type
 module P = Ollvm.Printer
 
-module L = Llvm
-
 let rec codegen_expr m syms e ret =
   match e with
   | Ast.Number(n) ->
@@ -43,11 +41,12 @@ let codegen_func syms m (Ast.Function(proto, expr)) =
 let codegen (Ast.Program(functions)) =
   let m = M.init
             "name"
-            ("x86_64", "apple", "macosx10.10.0")
+            ("x86_64", "pc", "linux-gnu")
             "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128" in
   let syms = Hashtbl.create 8 in
   let m = List.fold_left (codegen_func syms) m functions in
-  () (*Ollvm_llvmgateway.modul m.m_module*)
+  let llm = Ollvm_llvmgateway.modul m.m_module in
+  llm.m
 
   (*let tmp_path = Filename.temp_file "" "" in
   let tmp_file = open_out tmp_path in
