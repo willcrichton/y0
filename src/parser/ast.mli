@@ -3,14 +3,16 @@ open Token
 type ident = string
 
 type operator =
-  | Plus
-  | Minus
+  | Add
+  | Subtract
+  | Multiply
+  | Divide
 
 type expr =
   | Number of int
   | Variable of ident
   | Binary of operator * expr * expr
-  | Call of ident * expr array
+  | Call of ident * expr list
 
 type proto = Prototype of ident * ident list
 type func = Function of proto * expr

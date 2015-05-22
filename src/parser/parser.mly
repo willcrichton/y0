@@ -9,6 +9,12 @@
 %token EOF
 %token PLUS
 %token MINUS
+%token DIVIDE
+%token MULTIPLY
+
+%left PLUS MINUS
+%left MULTIPLY DIVIDE
+
 %start <Ast.program> prog
 
 %%
@@ -21,12 +27,12 @@ functions:
   | f = func; rest = functions { f :: rest }
 
 func:
-  DEF; name = ID; args = arguments; LBRACE; body = fbody; RBRACE
+  DEF; name = ID; LPAREN; args = arguments; RPAREN; LBRACE; body = fbody; RBRACE
   { Ast.Function(Ast.Prototype(name, args), body) };
 
 arguments:
-  | LPAREN; RPAREN { [] }
-  | LPAREN; a = arguments_nonzero; RPAREN { a }
+  | { [] }
+  | a = arguments_nonzero { a }
 
 arguments_nonzero:
   | id = ID { [id] }
@@ -35,9 +41,20 @@ arguments_nonzero:
 fbody: e = expr { e }
 
 expr:
-  | t1 = term; PLUS; t2 = expr { Ast.Binary(Ast.Plus, t1, t2) }
-  | t1 = term; MINUS; t2 = expr { Ast.Binary(Ast.Minus, t1, t2) }
+  | t1 = expr; PLUS; t2 = expr { Ast.Binary(Ast.Add, t1, t2) }
+  | t1 = expr; MINUS; t2 = expr { Ast.Binary(Ast.Subtract, t1, t2) }
+  | t1 = expr; MULTIPLY; t2 = expr { Ast.Binary(Ast.Multiply, t1, t2) }
+  | t1 = expr; DIVIDE; t2 = expr { Ast.Binary(Ast.Divide, t1, t2) }
+  | id = ID; LPAREN; args = expr_arguments; RPAREN { Ast.Call(id, args) }
   | t = term { t }
+
+expr_arguments:
+  | { [] }
+  | a = expr_arguments_nonzero { a }
+
+expr_arguments_nonzero:
+  | e = expr { [e] }
+  | e = expr; COMMA; rest = expr_arguments_nonzero { e :: rest }
 
 term:
   | id = ID { Ast.Variable(id) }

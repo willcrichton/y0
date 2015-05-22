@@ -4,6 +4,10 @@ open Ollvm.Ez.Instr
 module M = Ollvm.Ez.Module
 module T = Ollvm.Ez.Type
 module P = Ollvm.Printer
+open Llvm_target
+
+let module_name = "y0"
+let symtable_initial_size = 8
 
 let rec codegen_expr m syms e ret =
   match e with
@@ -16,7 +20,22 @@ let rec codegen_expr m syms e ret =
      let (m, [x1; x2]) = M.locals m T.i32 [""; ""] in
      let (m, ins1) = codegen_expr m syms e1 x1 in
      let (m, ins2) = codegen_expr m syms e2 x2 in
-     (m, ins1 @ ins2 @ [ret <-- add x1 x2])
+     let instr = match op with
+       | Ast.Add -> ret <-- add x1 x2
+       | Ast.Subtract -> ret <-- sub x1 x2
+       | Ast.Multiply -> ret <-- mul x1 x2
+       | Ast.Divide -> ret <-- sdiv x1 x2
+     in
+     (m, ins1 @ ins2 @ [instr])
+  | Ast.Call(id, args) ->
+     let (m, temps) = M.locals m T.i32 (List.map (fun _ -> "") args) in
+     let foldr (m, instrs) e tmp =
+       let (m, new_instrs) = codegen_expr m syms e tmp in
+       (m, instrs @ new_instrs)
+     in
+     let (m, instrs) = List.fold_left2 foldr (m, []) args temps in
+     let (m, fid) = M.global m T.i32 id in
+     (m, instrs @ [ret <-- call fid temps])
   | _ -> exit(-1)
 
 let rec bind_args m syms args =
@@ -36,19 +55,17 @@ let codegen_func syms m (Ast.Function(proto, expr)) =
   let (m, fblock) = M.local m T.label fname in
   let (m, fid)    = M.global m T.i32 fname in
   let f = define fid fargs [block fblock (fexpr @ [ret retvar]) ] in
-  let m = M.definition m f in m
+  let m = M.definition m f in
+  m
 
-let codegen (Ast.Program(functions)) =
+let codegen (Ast.Program(functions)) target_machine =
+  let arch :: platform :: os = Str.split (Str.regexp "-") (TargetMachine.triple target_machine) in
   let m = M.init
-            "name"
-            ("x86_64", "pc", "linux-gnu")
-            "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128" in
-  let syms = Hashtbl.create 8 in
+    module_name
+    (arch, platform, Str.string_after (List.fold_left (fun a b -> a ^ "-" ^ b) "" os) 1)
+    (DataLayout.as_string (TargetMachine.data_layout target_machine))
+  in
+  let syms = Hashtbl.create symtable_initial_size in
   let m = List.fold_left (codegen_func syms) m functions in
   let llm = Ollvm_llvmgateway.modul m.m_module in
   llm.m
-
-  (*let tmp_path = Filename.temp_file "" "" in
-  let tmp_file = open_out tmp_path in
-  let _ = output_value tmp_file slow in
-  read_process ("llvm-as < " ^ tmp_path ^ " | opt -S -mem2reg -O2")*)

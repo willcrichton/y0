@@ -1,3 +1,7 @@
+def test() {
+    23
+}
+
 def main(x, y) {
-    1
+    test()
 }

@@ -1,6 +1,7 @@
 {
   open Lexing
   open Parser
+  open Core.Std
 
   exception SyntaxError of string
 
@@ -10,6 +11,11 @@
       { pos with pos_bol = lexbuf.lex_curr_pos;
                  pos_lnum = pos.pos_lnum + 1
       }
+
+  let print_position outx lexbuf =
+    let pos = lexbuf.lex_curr_p in
+    fprintf outx "%s:%d:%d" pos.pos_fname
+      pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 }
 
 
@@ -31,6 +37,8 @@ rule read = parse
   | ','     { COMMA }
   | '+'     { PLUS }
   | '-'     { MINUS }
+  | '/'     { DIVIDE }
+  | '*'     { MULTIPLY }
   | id      { ID (Lexing.lexeme lexbuf) }
   | _       { raise (SyntaxError ("Unexpected token: " ^ (Lexing.lexeme lexbuf) ^ " at position " ^ (string_of_int lexbuf.lex_curr_pos))) }
   | eof     { EOF }

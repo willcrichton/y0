@@ -1,4 +1,4 @@
-PACKAGES=core,llvm,llvm.all_backends,llvm.target,llvm.executionengine,ollvm,ollvm_llvmgateway
+PACKAGES=core,llvm,llvm.all_backends,llvm.target,llvm.executionengine,ollvm,ollvm_llvmgateway,str
 SUBDIRS=src/parser,src/codegen
 FLAGS=-use-menhir -use-ocamlfind -tag thread -pkg $(PACKAGES) -r -Is $(SUBDIRS)
 BINARY=y0c
@@ -15,7 +15,7 @@ debug:
 	mv $(ENTRYPOINT).d.byte $(BINARY)
 
 run:
-	./$(BINARY) tests/test.y0
+	./$(BINARY) tests/test.y0 --dump-llvm
 
 clean:
 	rm -f $(BINARY)
