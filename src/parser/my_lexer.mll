@@ -1,6 +1,6 @@
 {
   open Lexing
-  open Parser
+  open My_parser
   open Core.Std
 
   exception SyntaxError of string

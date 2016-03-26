@@ -14,6 +14,6 @@ type expr =
   | Binary of operator * expr * expr
   | Call of ident * expr list
 
-type proto = Prototype of ident * ident list
+type proto = Prototype of ident * (ident list)
 type func = Function of proto * expr
 type program = Program of func list

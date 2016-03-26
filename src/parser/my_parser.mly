@@ -16,6 +16,7 @@
 %left MULTIPLY DIVIDE
 
 %start <Ast.program> prog
+%start <Ast.expr> expr
 
 %%
 
