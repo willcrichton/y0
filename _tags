@@ -1,0 +1,3 @@
+true: annot, bin_annot, thread
+true: package(core,sexplib.syntax,comparelib.syntax,llvm,llvm.all_backends,llvm.executionengine,ollvm,ollvm_llvmgateway,str)
+true: syntax(camlp4o)

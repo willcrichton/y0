@@ -1,6 +1,5 @@
-PACKAGES=core,llvm,llvm.all_backends,llvm.target,llvm.executionengine,ollvm,ollvm_llvmgateway,str
 SUBDIRS=src/parser,src/codegen
-FLAGS=-use-menhir -use-ocamlfind -tag thread -pkg $(PACKAGES) -r -Is $(SUBDIRS)
+FLAGS=-use-menhir -use-ocamlfind -tag thread -r -Is $(SUBDIRS)
 BINARY=y0c
 ENTRYPOINT=main
 

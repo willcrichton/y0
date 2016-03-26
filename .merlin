@@ -1,0 +1,7 @@
+S src
+B _build/**
+PKG core
+PKG core_kernel
+PKG llvm
+PKG ollvm
+PKG ollvm_llvmgateway
