@@ -16,7 +16,7 @@
 %left MULTIPLY DIVIDE
 
 %start <Ast.program> prog
-%start <Ast.expr> expr
+%start <Ast.expr> expr_eof
 
 %%
 
@@ -40,6 +40,8 @@ arguments_nonzero:
   | id = ID; COMMA; rest = arguments_nonzero { id :: rest }
 
 fbody: e = expr { e }
+
+expr_eof: e = expr; EOF { e }
 
 expr:
   | t1 = expr; PLUS; t2 = expr { Ast.Binary(Ast.Add, t1, t2) }

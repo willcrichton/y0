@@ -14,7 +14,7 @@ debug:
 	mv $(ENTRYPOINT).d.byte $(BINARY)
 
 run:
-	./$(BINARY) tests/test.y0 -dump-llvm
+	./$(BINARY) tests/test.y0 -v
 
 clean:
 	rm -f $(BINARY)
