@@ -1,2 +1,2 @@
 true: annot, bin_annot, thread, debug
-true: package(ppx_let,core,llvm,llvm.all_backends,llvm.executionengine,ollvm,ollvm_llvmgateway,str)
+true: package(ppx_let,core,llvm,llvm.all_backends,llvm.executionengine,ollvm,ollvm_llvmgateway,str,ANSITerminal)

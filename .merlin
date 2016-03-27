@@ -6,3 +6,4 @@ PKG llvm
 PKG ollvm
 PKG ollvm_llvmgateway
 PKG ppx_let
+PKG ANSITerminal

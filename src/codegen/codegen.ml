@@ -8,7 +8,10 @@ module Gateway = Ollvm_llvmgateway
 open Llvm_target
 
 let _target_machine : TargetMachine.t option ref = ref None
+let _cg_module : M.t option ref = ref None
+let _syms : Ollvm.Ez.Value.t String.Table.t ref = ref (String.Table.create ())
 let target_machine () = Option.value_exn !_target_machine
+let cg_module      () = Option.value_exn !_cg_module
 
 let rec codegen_expr m syms e ret =
   match e with
@@ -57,19 +60,18 @@ let codegen_func syms m (Ast.Function (proto, expr)) =
   let f = define fid fargs [block fblock (fexpr @ [ret retvar]) ] in
   M.definition m f
 
+let codegen_proto (Ast.Prototype (fname, args)) =
+  let m = cg_module () in
+  let (m, retvar) = M.local m T.i32 "" in
+  let (m, fargs)  = bind_args m (String.Table.create ()) args in
+  let (m, fid)    = M.global m T.i32 fname in
+  let m = M.definition m (define fid fargs []) in
+  _cg_module := Some m;
+  (Gateway.modul m.m_module).m
+
 let codegen (Ast.Program functions) =
-  let syms = String.Table.create () in
-  let arch :: platform :: os =
-    Str.split (Str.regexp "-") (TargetMachine.triple (target_machine ()))
-  in
-  let m =
-    M.init
-      "y0_llvm_module"
-      (arch, platform,
-       Str.string_after (List.fold os ~init:"" ~f:(fun a b -> a ^ "-" ^ b)) 1)
-      (DataLayout.as_string (TargetMachine.data_layout (target_machine ())))
-  in
-  let m = List.fold_left functions ~init:m ~f:(codegen_func syms) in
+  let m = List.fold_left functions ~init:(cg_module ()) ~f:(codegen_func !_syms) in
+  _cg_module := Some m;
   (Gateway.modul m.m_module).m
 
 let emit_object m file =
@@ -79,4 +81,14 @@ let init () =
   let () = Llvm_all_backends.initialize () in
   let target = Target.by_triple (Target.default_triple()) in
   _target_machine :=
-    Some (TargetMachine.create (Target.default_triple ()) target)
+    Some (TargetMachine.create (Target.default_triple ()) target);
+  let arch :: platform :: os =
+    Str.split (Str.regexp "-") (TargetMachine.triple (target_machine ()))
+  in
+  _cg_module :=
+    Some
+      (M.init
+         "y0_llvm_module"
+         (arch, platform,
+          Str.string_after (List.fold os ~init:"" ~f:(fun a b -> a ^ "-" ^ b)) 1)
+         (DataLayout.as_string (TargetMachine.data_layout (target_machine ()))))

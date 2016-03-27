@@ -1,5 +1,3 @@
-open Token
-
 type ident = string
 
 type operator =

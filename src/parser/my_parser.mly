@@ -1,6 +1,7 @@
 %token <int> INT
 %token <string> ID
 %token DEF
+%token EXTERN
 %token LPAREN
 %token RPAREN
 %token LBRACE
@@ -17,6 +18,7 @@
 
 %start <Ast.program> prog
 %start <Ast.expr> expr_eof
+%start <Ast.proto> extern
 
 %%
 
@@ -27,9 +29,14 @@ functions:
   | (* empty *) { [] }
   | f = func; rest = functions { f :: rest }
 
+proto:
+  DEF; name = ID; LPAREN; args = arguments; RPAREN; { Ast.Prototype (name, args) }
+
 func:
-  DEF; name = ID; LPAREN; args = arguments; RPAREN; LBRACE; body = fbody; RBRACE
-  { Ast.Function(Ast.Prototype(name, args), body) };
+  p = proto; LBRACE; body = fbody; RBRACE
+  { Ast.Function (p, body) };
+
+extern: EXTERN; p = proto; EOF { p }
 
 arguments:
   | { [] }
