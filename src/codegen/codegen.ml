@@ -30,7 +30,6 @@ let rec codegen_expr (m : M.t) (e : Ast.expr) (ret : Ollvm.Ez.Value.t) =
       | Ast.Add      -> ret <-- add x1 x2
       | Ast.Subtract -> ret <-- sub x1 x2
       | Ast.Multiply -> ret <-- mul x1 x2
-      | Ast.Divide   -> ret <-- sdiv x1 x2
     in
     (m, ins1 @ ins2 @ [instr])
   | Ast.Call (id, args) ->

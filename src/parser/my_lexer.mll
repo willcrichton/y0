@@ -30,7 +30,6 @@ rule read = parse
   | newline  { next_line lexbuf; read lexbuf }
   | int      { INT (int_of_string (Lexing.lexeme lexbuf)) }
   | "def"    { DEF }
-  | "extern" { EXTERN }
   | '{'      { LBRACE }
   | '}'      { RBRACE }
   | '('      { LPAREN }
@@ -38,7 +37,6 @@ rule read = parse
   | ','      { COMMA }
   | '+'      { PLUS }
   | '-'      { MINUS }
-  | '/'      { DIVIDE }
   | '*'      { MULTIPLY }
   | id       { ID (Lexing.lexeme lexbuf) }
   | _        { raise (SyntaxError ("Unexpected token: " ^ (Lexing.lexeme lexbuf) ^ " at position " ^ (string_of_int lexbuf.lex_curr_pos))) }

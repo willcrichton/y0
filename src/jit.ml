@@ -26,10 +26,6 @@ let start verbose =
       let ast = Util.parse_buf My_parser.prog lexbuf in
       Codegen.codegen ast;
       print_result "added function"
-    | My_parser.EXTERN ->
-      let ast = Util.parse_buf My_parser.extern lexbuf in
-      Codegen.codegen_proto ast;
-      print_result "added extern function"
     | _ ->
       (* We put expressions in an "anonymous" function and call the result *)
       let ast = Util.parse_buf My_parser.expr_eof lexbuf in

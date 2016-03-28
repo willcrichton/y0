@@ -4,7 +4,6 @@ type operator =
   | Add
   | Subtract
   | Multiply
-  | Divide
 
 type expr =
   | Number of int

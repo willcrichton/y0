@@ -1,7 +1,6 @@
 %token <int> INT
 %token <string> ID
 %token DEF
-%token EXTERN
 %token LPAREN
 %token RPAREN
 %token LBRACE
@@ -10,15 +9,13 @@
 %token EOF
 %token PLUS
 %token MINUS
-%token DIVIDE
 %token MULTIPLY
 
 %left PLUS MINUS
-%left MULTIPLY DIVIDE
+%left MULTIPLY
 
 %start <Ast.program> prog
 %start <Ast.expr> expr_eof
-%start <Ast.proto> extern
 
 %%
 
@@ -36,8 +33,6 @@ func:
   p = proto; LBRACE; body = fbody; RBRACE
   { Ast.Function (p, body) };
 
-extern: EXTERN; p = proto; EOF { p }
-
 arguments:
   | { [] }
   | a = arguments_nonzero { a }
@@ -54,7 +49,6 @@ expr:
   | t1 = expr; PLUS; t2 = expr { Ast.Binary(Ast.Add, t1, t2) }
   | t1 = expr; MINUS; t2 = expr { Ast.Binary(Ast.Subtract, t1, t2) }
   | t1 = expr; MULTIPLY; t2 = expr { Ast.Binary(Ast.Multiply, t1, t2) }
-  | t1 = expr; DIVIDE; t2 = expr { Ast.Binary(Ast.Divide, t1, t2) }
   | id = ID; LPAREN; args = expr_arguments; RPAREN { Ast.Call(id, args) }
   | t = term { t }
 
