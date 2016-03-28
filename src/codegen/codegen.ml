@@ -12,6 +12,7 @@ let _cg_module : M.t option ref = ref None
 let _syms : Ollvm.Ez.Value.t String.Table.t ref = ref (String.Table.create ())
 let target_machine () = Option.value_exn !_target_machine
 let cg_module      () = Option.value_exn !_cg_module
+let llvm_module    () = (Gateway.modul (cg_module ()).m_module).m
 
 let rec codegen_expr m syms e ret =
   match e with
@@ -63,16 +64,15 @@ let codegen_proto (Ast.Prototype (fname, args)) =
   let (m, fargs)  = bind_args m (String.Table.create ()) args in
   let (m, fid)    = M.global m T.i32 fname in
   let m = M.definition m (define fid fargs []) in
-  _cg_module := Some m;
-  (Gateway.modul m.m_module).m
+  _cg_module := Some m
 
 let codegen (Ast.Program functions) =
   let m = List.fold_left functions ~init:(cg_module ()) ~f:(codegen_func !_syms) in
-  _cg_module := Some m;
-  (Gateway.modul m.m_module).m
+  _cg_module := Some m
 
-let emit_object m file =
-  TargetMachine.emit_to_file m CodeGenFileType.ObjectFile file (target_machine ())
+let emit_object file =
+  TargetMachine.emit_to_file
+    (llvm_module ()) CodeGenFileType.ObjectFile file (target_machine ())
 
 let init () =
   let () = Llvm_all_backends.initialize () in

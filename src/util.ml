@@ -1,3 +1,5 @@
+open Core.Std
+
 let read_process command =
   let buffer_size = 2048 in
   let buffer = Buffer.create buffer_size in
@@ -16,3 +18,14 @@ let write_to_temp_file text =
   let tmp_file = open_out tmp_path in
   let _ = output_string tmp_file text in
   (tmp_path)
+
+let parse_buf parse lexbuf =
+  try parse My_lexer.read lexbuf with
+  | My_lexer.SyntaxError msg ->
+    fprintf stderr "%a: %s\n" My_lexer.print_position lexbuf msg;
+    exit(1)
+  | My_parser.Error ->
+    fprintf stderr "%a: syntax error on token \"%s\"\n" My_lexer.print_position
+      lexbuf
+      (Lexing.lexeme lexbuf);
+    exit(1)
