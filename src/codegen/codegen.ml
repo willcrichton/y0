@@ -42,13 +42,10 @@ let rec codegen_expr m syms e ret =
     (m, instrs @ [ret <-- call fid temps])
 
 let rec bind_args m syms args =
-  match args with
-  | [] -> (m, [])
-  | arg :: rest ->
+  List.fold args ~init:(m, []) ~f:(fun (m, bound) arg ->
     let (m, x) = M.local m T.i32 arg in
     let () = String.Table.add_exn syms ~key:arg ~data:x in
-    let (m, bound) = bind_args m syms rest in
-    (m, x :: bound)
+    (m, x :: bound))
 
 let codegen_func syms m (Ast.Function (proto, expr)) =
   let Ast.Prototype (fname, args) = proto in

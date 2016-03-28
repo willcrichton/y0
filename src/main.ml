@@ -17,8 +17,6 @@ let parse_buf (parse : (Lexing.lexbuf -> My_parser.token) -> Lexing.lexbuf -> 'a
       (Lexing.lexeme lexbuf);
     exit(1)
 
-let flush () = Out_channel.flush Out_channel.stdout
-
 let build_file (path : string) =
   (* Lex the input into tokens *)
   let lexbuf = Lexing.from_channel (open_in path) in
@@ -33,19 +31,29 @@ let build_file (path : string) =
   if err <> 0 then failwith "Compilation failed"
   else ()
 
+let prompt () =
+  T.printf [T.Bold] ">>> "; Out_channel.flush Out_channel.stdout
+
+let print_result result =
+  printf "%s\n" result; prompt ()
+
 let start_jit () =
   let anon_counter = ref 0 in
   let jit_module = Llvm.create_module (Llvm.global_context ()) "jit_module" in
   let execution_engine = EE.ExecutionEngine.create jit_module in
+  prompt ();
+
   In_channel.iter_lines In_channel.stdin ~f:(fun line ->
     let lexbuf = Lexing.from_string line in
     match My_lexer.read (Lexing.from_string line) with
     | My_parser.DEF ->
       let ast = parse_buf My_parser.prog lexbuf in
       ignore (Codegen.codegen ast);
+      print_result "added function"
     | My_parser.EXTERN ->
       let ast = parse_buf My_parser.extern lexbuf in
       ignore (Codegen.codegen_proto ast);
+      print_result "added extern function"
     | _ ->
       let ast = parse_buf My_parser.expr_eof lexbuf in
       let anon_id = "anon" ^ (Int.to_string_hum !anon_counter) in
@@ -58,9 +66,7 @@ let start_jit () =
         EE.GenericValue.as_int
           (EE.ExecutionEngine.run_function fn [||] execution_engine)
       in
-      T.printf [T.red; T.Bold] "Result: "; printf "%d\n" result;
-      flush ()
-  )
+      print_result (sprintf "%d" result))
 
 let () =
   let open Command.Let_syntax in
