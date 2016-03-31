@@ -9,6 +9,6 @@ let compile path verbose =
   let obj_file = Filename.temp_file "" "" in
   Codegen.emit_object obj_file;
   let output_path = (Filename.chop_extension (Filename.basename path)) in
-  let err = Sys.command ("gcc " ^ obj_file ^ " -o " ^ output_path) in
+  let err = Sys.command (sprintf "gcc %s -o %s" obj_file output_path) in
   if err <> 0 then failwith "Compilation failed"
   else ()
