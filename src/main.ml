@@ -10,7 +10,11 @@ let () =
       and path = anon (maybe ("path" %: string))
       in fun () ->
         Codegen.init();
-        if run_jit then Jit.start verbose
-        else Compiler.compile (Option.value_exn path) verbose
+        if run_jit then
+          Jit.start verbose
+        else
+          Compiler.compile
+            (Option.value_exn ~message:"Path is missing" path)
+            verbose
     ]
   |> Command.run

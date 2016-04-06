@@ -46,8 +46,8 @@ fbody: e = expr { e }
 expr_eof: e = expr; EOF { e }
 
 expr:
-  | t1 = expr; PLUS; t2 = expr { Ast.Binary(Ast.Add, t1, t2) }
-  | t1 = expr; MINUS; t2 = expr { Ast.Binary(Ast.Subtract, t1, t2) }
+  | t1 = expr; PLUS; t2 = expr     { Ast.Binary(Ast.Add, t1, t2) }
+  | t1 = expr; MINUS; t2 = expr    { Ast.Binary(Ast.Subtract, t1, t2) }
   | t1 = expr; MULTIPLY; t2 = expr { Ast.Binary(Ast.Multiply, t1, t2) }
   | id = ID; LPAREN; args = expr_arguments; RPAREN { Ast.Call(id, args) }
   | t = term { t }

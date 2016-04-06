@@ -36,9 +36,9 @@ let start verbose =
 
       let modul = Codegen.llvm_module () in
       ExecutionEngine.add_module modul execution_engine;
-      let fn = Option.value_exn (Llvm.lookup_function anon_id modul) in
+      let anon_fn = Option.value_exn (Llvm.lookup_function anon_id modul) in
       let result =
         GenericValue.as_int
-          (ExecutionEngine.run_function fn [||] execution_engine)
+          (ExecutionEngine.run_function anon_fn [||] execution_engine)
       in
       print_result (Int.to_string result))
